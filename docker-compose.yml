@@ -1,0 +1,66 @@
+services:
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: rh_solutions_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-rh_solutions_v2}
+      POSTGRES_USER: ${POSTGRES_USER:-rh_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rh_secret_2026}
+      TZ: America/Bogota
+      PGTZ: America/Bogota
+    ports:
+      - "${POSTGRES_PORT:-5435}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./seeders/init_postgres.sql:/docker-entrypoint-initdb.d/01_init_postgres.sql:ro
+    networks:
+      - rh_solutions_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rh_admin} -d ${POSTGRES_DB:-rh_solutions_v2}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  pgweb:
+    image: sosedoff/pgweb:latest
+    container_name: rh_solutions_pgweb
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGWEB_DATABASE_URL: postgres://${POSTGRES_USER:-rh_admin}:${POSTGRES_PASSWORD:-rh_secret_2026}@postgres:5432/${POSTGRES_DB:-rh_solutions_v2}?sslmode=disable
+      TZ: America/Bogota
+    ports:
+      - "${PGWEB_PORT:-7070}:8081"
+    networks:
+      - rh_solutions_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: rh_solutions_redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6380}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - rh_solutions_network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  rh_solutions_network:
+    driver: bridge

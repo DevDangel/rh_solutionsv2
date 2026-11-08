@@ -1,0 +1,46 @@
+[project]
+name = "rh-backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "DevAngel", email = "angeldavidh18@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "argon2-cffi>=25.1.0",
+    "bcrypt>=5.0.0",
+    "celery>=5.7.0",
+    "channels>=4.3.2",
+    "channels-redis>=4.3.0",
+    "django>=5.2,<5.3",
+    "django-cors-headers>=4.9.0",
+    "django-redis>=7.0.0",
+    "djangorestframework>=3.18.3",
+    "openpyxl>=3.1.5",
+    "pandas>=3.1.1",
+    "psycopg[binary]>=3.3.8",
+    "python-dotenv>=1.2.4",
+    "redis>=8.1.0",
+    "reportlab>=5.1.0",
+]
+
+[project.scripts]
+rh-backend = "rh_backend:main"
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.17.4",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+ignore = ["RUF012", "BLE001"]
+
